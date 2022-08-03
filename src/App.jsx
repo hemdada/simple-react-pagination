@@ -5,23 +5,32 @@ import Pagination from './components/Pagination';
 
 function App() {
 
-    // To hold the actual data
     const [data, setData] = useState([])
     const [loading, setLoading] = useState(true);
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [recordsPerPage] = useState(10);
+    const [recordsPerPage] = useState(5);
 
 
     useEffect(() => {
-        axios.get('MOCK_DATA.json')
-            .then(res => {
-                    setData(res.data);
-                    setLoading(false);
-                })
-                .catch(() => {
-                    alert('There was an error while retrieving the data')
-                })
+        const requestOne = axios.get('data/lock_list.json');
+        const requestTwo = axios.get('data/other_iot_devices.json');
+        const requestThree = axios.get('data/special_integration_lock.json');
+
+        axios.all([requestOne, requestTwo, requestThree]).then(axios.spread((...responses) => {
+            const responseOne = responses[0];
+            const responseTwo = responses[1];
+            const responseThree = responses[2];
+            console.log(responseOne.data.locks);
+            console.log(responseTwo.data.results);
+            console.log(responseThree.data.results);
+            const fullData = [...responseOne.data.locks, ...responseTwo.data.results, ...responseThree.data.results];
+            setData(fullData)
+            setLoading(false);
+        })).catch(errors => {
+            alert('There was an error while retrieving the data')
+        })
+
     }, [])
 
     const indexOfLastRecord = currentPage * recordsPerPage;
@@ -31,8 +40,8 @@ function App() {
 
     return (
         <div className='container mt-5'>
-            <h2> Simple Pagination Example in React </h2>
-            <Records data={currentRecords}/>
+            <h2> Assignment </h2>
+            <Records data={currentRecords} />
             <Pagination
                 nPages={nPages}
                 currentPage={currentPage}
